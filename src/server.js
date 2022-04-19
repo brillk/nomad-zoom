@@ -28,6 +28,10 @@ wss.on("connection", socket => {
   }); //서로 다른 브라우저에 같은 메시지를 보냈다
 });
 
+//지금 보내는 문자가 닉네임인지 그냥 메시지인지 구별을 해줘야 한다
+//json.stringify and parse
+
 //지금 서로 다른 브라우저에서 소통을 할거다. 어떤 연결된 유저가 하는지 알려줘야함
 
 server.listen(3000, handleListen);
+
