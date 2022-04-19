@@ -17,4 +17,10 @@ const server = http.createServer(app);
 //현재 http, webSocket를 같은 서버 동시에 실행시키고 있다, 굳이 안해도됨
 const wss = new WebSocket.Server({ server });
 
+function handleConnection(socket) {
+  console.log(socket);
+}
+
+wss.on("connection", handleConnection);
+
 server.listen(3000, handleListen);
