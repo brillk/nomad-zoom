@@ -21,10 +21,13 @@ socket.io를 쓸떄는 프론트랑 백엔드 둘다 선언해줘야 한다
  */
 
 io.on("connection", socket => {
-  console.log(socket)
-})
-
-
+  socket.on("enter_room", (msg, done) => {
+    console.log(msg);
+    setTimeout(() => {
+      done();
+    }, 10000);
+  });
+});
 
 // const sockets = [];
 //const wss = new WebSocket.Server({ server });
@@ -55,4 +58,3 @@ io.on("connection", socket => {
 //지금 서로 다른 브라우저에서 소통을 할거다. 어떤 연결된 유저가 하는지 알려줘야함
 
 server.listen(3000, handleListen);
-
