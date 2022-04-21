@@ -18,12 +18,29 @@ const io = SocketIO(server);
 socket.io를 쓸떄는 프론트랑 백엔드 둘다 선언해줘야 한다
  */
 
+function publicRooms() {
+  const {
+    sockets: {
+      adapter: { sids, rooms },
+    },
+  } = io;
+  const publicRooms = [];
+  rooms.forEach((_, key) => {
+    if (sids.get(key) === undefined) {
+      publicRooms.push(key);
+    }
+  });
+  return publicRooms;
+}
+//서로 다른 서버에 있는 사람들과 대화하기 위해선 
+// adapter를 써서 연결할수있다
+
 io.on("connection", socket => {
   socket["nickname"] = "Ananimous";
   socket.onAny(event => {
     console.log(`Socket Event: ${event}`);
   });
-  socket.on("enter_room", (roomName, nickname,done) => {
+  socket.on("enter_room", (roomName, nickname, done) => {
     socket["nickname"] = nickname;
     socket.join(roomName);
     done();
