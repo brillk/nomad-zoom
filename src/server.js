@@ -1,5 +1,5 @@
 import express from "express";
-import WebSocket from "ws";
+import SocketIO from "socket.io";
 import http from "http";
 
 const app = express();
@@ -15,18 +15,39 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
 const server = http.createServer(app);
 
 //현재 http, webSocket를 같은 서버 동시에 실행시키고 있다, 굳이 안해도됨
-const wss = new WebSocket.Server({ server });
+const io = SocketIO(server);
+/*
+socket.io를 쓸떄는 프론트랑 백엔드 둘다 선언해줘야 한다
+ */
 
-const sockets = [];
+io.on("connection", socket => {
+  console.log(socket)
+})
 
-wss.on("connection", socket => {
-  sockets.push(socket);
-  console.log("Connected to Browser ✅");
-  socket.on("close", () => console.log("Disconnected from the Browser ❌"));
-  socket.on("message", message => {
-    sockets.forEach(aSocket => aSocket.send(message.toString()));
-  }); //서로 다른 브라우저에 같은 메시지를 보냈다
-});
+
+
+// const sockets = [];
+//const wss = new WebSocket.Server({ server });
+
+// wss.on("connection", socket => {
+//   sockets.push(socket);
+//   socket["nickname"] = "Ananimous"; //만약 비로그인자가 왔을때 이 닉네임을 붙여줌
+//   //console.log("Connected to Browser ✅");
+//   //socket.on("close", () => console.log("Disconnected from the Browser ❌"));
+//   socket.on("message", msg => {
+//     const message = JSON.parse(msg);
+//     switch (message.type) {
+//       case "new_message":
+//         sockets.forEach(aSocket =>
+//           aSocket.send(`${socket.nickname}: ${message.payload}`)
+//         );
+//         break;
+//       case "nickname":
+//         socket["nickname"] = message.payload;
+//         break;
+//     }
+//   }); //서로 다른 브라우저에 같은 메시지를 보냈다
+// });
 
 //지금 보내는 문자가 닉네임인지 그냥 메시지인지 구별을 해줘야 한다
 //json.stringify and parse
