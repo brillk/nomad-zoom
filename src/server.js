@@ -27,6 +27,13 @@ io.on("connection", socket => {
     done();
     socket.to(roomName).emit("welcome");
   });
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach(room => socket.to(room).emit("bye"));
+  });
+  socket.on("new_message", (msg, room, done) => {
+    socket.to(room).emit("new_message", msg);
+    done();
+  });
 });
 /*
 const sockets = [];
@@ -57,7 +64,6 @@ json.stringify and parse
 
 지금 서로 다른 브라우저에서 소통을 할거다. 어떤 연결된 유저가 하는지 알려줘야함
  */
-
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
 
