@@ -32,8 +32,14 @@ function publicRooms() {
   });
   return publicRooms;
 }
-//서로 다른 서버에 있는 사람들과 대화하기 위해선 
+//서로 다른 서버에 있는 사람들과 대화하기 위해선
 // adapter를 써서 연결할수있다
+
+/*
+ 요약: sids에는 개인방, rooms에는 개인방,공개방 다있음.
+rooms가 sids를 포함한다 보면됨.
+그래서 공개방만 얻고 싶을때는 rooms에서 sids를 빼면 됨
+*/
 
 io.on("connection", socket => {
   socket["nickname"] = "Ananimous";
@@ -45,10 +51,15 @@ io.on("connection", socket => {
     socket.join(roomName);
     done();
     socket.to(roomName).emit("welcome", socket.nickname);
+    io.sockets.emit("room_change", publicRooms());
   });
   socket.on("disconnecting", () => {
     socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname));
   });
+  socket.on("disconnect", () => {
+    io.sockets.emit("room_change", publicRooms());
+  });
+
   socket.on("new_message", (msg, room, done) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
     done();
