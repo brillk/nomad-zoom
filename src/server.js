@@ -1,5 +1,6 @@
 import express from "express";
-import SocketIO from "socket.io";
+import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 import http from "http";
 
 const app = express();
@@ -13,7 +14,16 @@ app.get("/*", (req, res) => res.redirect("/"));
 const server = http.createServer(app);
 
 //현재 http, webSocket를 같은 서버 동시에 실행시키고 있다, 굳이 안해도됨
-const io = SocketIO(server);
+const io = new Server(server, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true,
+  },
+});
+
+instrument(io, {
+  auth: false
+});
 /*
 socket.io를 쓸떄는 프론트랑 백엔드 둘다 선언해줘야 한다
  */
@@ -40,6 +50,9 @@ function publicRooms() {
 rooms가 sids를 포함한다 보면됨.
 그래서 공개방만 얻고 싶을때는 rooms에서 sids를 빼면 됨
 */
+function countRoom(roomName) {
+  return io.sockets.adapter.rooms.get(roomName)?.size;
+}
 
 io.on("connection", socket => {
   socket["nickname"] = "Ananimous";
@@ -50,11 +63,13 @@ io.on("connection", socket => {
     socket["nickname"] = nickname;
     socket.join(roomName);
     done();
-    socket.to(roomName).emit("welcome", socket.nickname);
+    socket.to(roomName).emit("welcome", socket.nickname, countRoom(roomName));
     io.sockets.emit("room_change", publicRooms());
   });
   socket.on("disconnecting", () => {
-    socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname));
+    socket.rooms.forEach(room =>
+      socket.to(room).emit("bye", socket.nickname, countRoom(room) - 1)
+    );
   });
   socket.on("disconnect", () => {
     io.sockets.emit("room_change", publicRooms());
